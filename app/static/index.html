@@ -68,6 +68,11 @@
             <i class="fa-solid fa-microphone-lines"></i>
             <span>Voice & RAG Studio</span>
           </button>
+          <button class="nav-item" data-tab="phone">
+            <i class="fa-solid fa-phone-volume"></i>
+            <span>Web Phone & Calling</span>
+            <span class="badge-count text-emerald-badge" id="nav-calls-count">3</span>
+          </button>
           <button class="nav-item" data-tab="knowledge">
             <i class="fa-solid fa-database"></i>
             <span>Knowledge Base</span>
@@ -458,6 +463,277 @@
           </div>
         </section>
 
+        <!-- ==============================================
+             TAB 6: WEB PHONE & CALL CENTER
+             ============================================== -->
+        <section class="tab-pane" id="pane-phone">
+          
+          <!-- Top Telephony Banner -->
+          <div class="telephony-hero-card">
+            <div class="telephony-hero-left">
+              <div class="phone-badge-icon">
+                <i class="fa-solid fa-phone-volume"></i>
+              </div>
+              <div class="phone-hero-info">
+                <div class="phone-hero-title">
+                  <span>Toll-Free Callable Number:</span>
+                  <span class="phone-number-highlight" id="hero-phone-number">+1 (800) 327-9492</span>
+                  <span class="phone-alpha-tag">(+1-800-DARWIX-AI)</span>
+                </div>
+                <div class="phone-hero-sub">
+                  <span><i class="fa-solid fa-network-wired"></i> SIP URI: <code>sip:agent@darwix.ai</code></span>
+                  <span class="divider-dot">•</span>
+                  <span><i class="fa-solid fa-tower-broadcast text-emerald"></i> Gateway: Twilio / Telnyx / WebRTC</span>
+                  <span class="divider-dot">•</span>
+                  <span><i class="fa-solid fa-circle-check text-cyan"></i> Auto-Recording & PII Masking: Active</span>
+                </div>
+              </div>
+            </div>
+            <div class="telephony-hero-right">
+              <button class="btn btn-emerald" id="btn-quick-call-start">
+                <i class="fa-solid fa-phone"></i> <span>Launch Web Call</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Calling Studio Grid -->
+          <div class="phone-grid">
+            
+            <!-- Left: Softphone Dialer & Scenarios -->
+            <div class="phone-col-left">
+              
+              <!-- Softphone Device Panel -->
+              <div class="panel softphone-panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <i class="fa-solid fa-mobile-screen-button text-indigo"></i>
+                    <span>Web Softphone Dialer</span>
+                  </div>
+                  <div class="softphone-status-pill" id="softphone-status-pill">
+                    <span class="status-dot"></span>
+                    <span id="softphone-status-text">Standby</span>
+                  </div>
+                </div>
+
+                <div class="softphone-body">
+                  <!-- Phone Screen -->
+                  <div class="phone-screen">
+                    <div class="screen-top-bar">
+                      <span class="screen-timer" id="call-timer-display">00:00</span>
+                      <span class="screen-carrier"><i class="fa-solid fa-signal text-emerald"></i> Darwix-VoIP</span>
+                    </div>
+                    <div class="screen-dialed-display">
+                      <input type="text" id="phone-dial-input" placeholder="Enter number or click dialpad..." value="+1 (800) 327-9492">
+                    </div>
+                    <div class="screen-sub-msg" id="phone-screen-sub">Q1 Voice Agent Ready</div>
+                  </div>
+
+                  <!-- Dialpad Buttons -->
+                  <div class="dialpad-grid">
+                    <button class="dial-key" data-key="1"><span class="digit">1</span><span class="alpha">&nbsp;</span></button>
+                    <button class="dial-key" data-key="2"><span class="digit">2</span><span class="alpha">ABC</span></button>
+                    <button class="dial-key" data-key="3"><span class="digit">3</span><span class="alpha">DEF</span></button>
+                    <button class="dial-key" data-key="4"><span class="digit">4</span><span class="alpha">GHI</span></button>
+                    <button class="dial-key" data-key="5"><span class="digit">5</span><span class="alpha">JKL</span></button>
+                    <button class="dial-key" data-key="6"><span class="digit">6</span><span class="alpha">MNO</span></button>
+                    <button class="dial-key" data-key="7"><span class="digit">7</span><span class="alpha">PQRS</span></button>
+                    <button class="dial-key" data-key="8"><span class="digit">8</span><span class="alpha">TUV</span></button>
+                    <button class="dial-key" data-key="9"><span class="digit">9</span><span class="alpha">WXYZ</span></button>
+                    <button class="dial-key" data-key="*"><span class="digit">*</span><span class="alpha">&nbsp;</span></button>
+                    <button class="dial-key" data-key="0"><span class="digit">0</span><span class="alpha">+</span></button>
+                    <button class="dial-key" data-key="#"><span class="digit">#</span><span class="alpha">&nbsp;</span></button>
+                  </div>
+
+                  <!-- Call Action Controls -->
+                  <div class="phone-action-row">
+                    <button class="btn btn-emerald-lg" id="btn-call-connect" title="Start Call">
+                      <i class="fa-solid fa-phone"></i> <span>Call</span>
+                    </button>
+                    <button class="btn btn-danger-lg" id="btn-call-hangup" title="End Call" disabled>
+                      <i class="fa-solid fa-phone-slash"></i> <span>Hang Up</span>
+                    </button>
+                    <button class="btn btn-outline-circle" id="btn-call-mute" title="Mute Microphone" disabled>
+                      <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <button class="btn btn-outline-circle" id="btn-call-clear" title="Clear Dialpad">
+                      <i class="fa-solid fa-delete-left"></i>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Pre-recorded Test Call Scenarios -->
+              <div class="panel scenarios-panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <i class="fa-solid fa-play-circle text-cyan"></i>
+                    <span>Official Test Call Scenarios</span>
+                  </div>
+                </div>
+                <div class="scenarios-list">
+                  <div class="scenario-item" data-call-id="CALL-2026-0819-01">
+                    <div class="scenario-meta">
+                      <span class="scenario-badge badge-cyan">Test Call 1</span>
+                      <span class="scenario-dur">48s</span>
+                    </div>
+                    <div class="scenario-title">Deductibles, Family Max, & PCP Co-Pay</div>
+                    <div class="scenario-desc">Tests in-network $500 deductible, $1,000 family, and $20 PCP copay.</div>
+                    <div class="scenario-actions">
+                      <button class="btn btn-ghost-xs btn-simulate-call" data-scenario="1">
+                        <i class="fa-solid fa-play"></i> Replay Session
+                      </button>
+                      <button class="btn btn-ghost-xs btn-view-transcript" data-call-id="CALL-2026-0819-01">
+                        <i class="fa-solid fa-file-lines"></i> Transcript
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="scenario-item" data-call-id="CALL-2026-0819-02">
+                    <div class="scenario-meta">
+                      <span class="scenario-badge badge-indigo">Test Call 2</span>
+                      <span class="scenario-dur">55s</span>
+                    </div>
+                    <div class="scenario-title">Prescriptions & Out-of-Network Care</div>
+                    <div class="scenario-desc">Tests Tier 1 generic $10 copay and 40% out-of-network coinsurance.</div>
+                    <div class="scenario-actions">
+                      <button class="btn btn-ghost-xs btn-simulate-call" data-scenario="2">
+                        <i class="fa-solid fa-play"></i> Replay Session
+                      </button>
+                      <button class="btn btn-ghost-xs btn-view-transcript" data-call-id="CALL-2026-0819-02">
+                        <i class="fa-solid fa-file-lines"></i> Transcript
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="scenario-item" data-call-id="CALL-2026-0819-03">
+                    <div class="scenario-meta">
+                      <span class="scenario-badge badge-amber">Test Call 3</span>
+                      <span class="scenario-dur">62s</span>
+                    </div>
+                    <div class="scenario-title">Claims PII Masking & Flight Refusal</div>
+                    <div class="scenario-desc">Tests PII redaction on claims contacts and graceful refusal on airline travel.</div>
+                    <div class="scenario-actions">
+                      <button class="btn btn-ghost-xs btn-simulate-call" data-scenario="3">
+                        <i class="fa-solid fa-play"></i> Replay Session
+                      </button>
+                      <button class="btn btn-ghost-xs btn-view-transcript" data-call-id="CALL-2026-0819-03">
+                        <i class="fa-solid fa-file-lines"></i> Transcript
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right: Live Call Conversation HUD & Stream -->
+            <div class="phone-col-right">
+              
+              <div class="panel live-call-panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <i class="fa-solid fa-headset text-emerald"></i>
+                    <span id="live-call-title">Live Call Conversation Feed</span>
+                  </div>
+                  <div class="call-hud-right">
+                    <div class="live-rec-badge" id="live-rec-indicator">
+                      <span class="rec-dot"></span> <span>AUTO-REC</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Active Audio Equalizer HUD -->
+                <div class="live-audio-hud" id="live-audio-hud">
+                  <div class="audio-hud-left">
+                    <div class="audio-hud-avatar"><i class="fa-solid fa-robot"></i></div>
+                    <div class="audio-hud-info">
+                      <div class="audio-agent-name">Q1 Healthcare Voice Assistant</div>
+                      <div class="audio-agent-state" id="audio-agent-state">Listening for caller questions...</div>
+                    </div>
+                  </div>
+                  <div class="hud-equalizer-bars" id="hud-equalizer">
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                    <div class="eq-bar"></div>
+                  </div>
+                </div>
+
+                <!-- Turn-by-Turn Conversation Stream -->
+                <div class="call-transcript-stream" id="call-transcript-stream">
+                  <div class="call-empty-state">
+                    <i class="fa-solid fa-phone-slash"></i>
+                    <p>Click "Call" on the dialpad or launch one of the Test Call Scenarios to start a live voice session.</p>
+                  </div>
+                </div>
+
+                <!-- In-Call Voice Input Bar (Interactive Mode) -->
+                <div class="call-input-bar" id="call-input-bar">
+                  <div class="call-input-wrap">
+                    <input type="text" id="call-text-input" placeholder="Speak into mic or type a policy question..." disabled>
+                    <button class="btn-icon-subtle" id="btn-call-speech-mic" title="Speak to Voice Agent" disabled>
+                      <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <button class="btn btn-primary-sm" id="btn-call-send-msg" disabled>
+                      <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Bottom: Persistent Call Recordings Hub -->
+          <div class="panel call-history-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <i class="fa-solid fa-file-audio text-indigo"></i>
+                <span>Recorded Call Transcripts & Evaluation Hub (<span id="history-call-count">3</span> Calls)</span>
+              </div>
+              <div class="history-actions">
+                <button class="btn btn-ghost-sm" id="btn-refresh-calls">
+                  <i class="fa-solid fa-rotate"></i> <span>Refresh</span>
+                </button>
+                <a href="/api/v1/voice/calls" target="_blank" class="btn btn-ghost-sm" title="Raw JSON API">
+                  <i class="fa-solid fa-code"></i> <span>Raw API</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table" id="call-records-table">
+                <thead>
+                  <tr>
+                    <th>Call ID</th>
+                    <th>Caller ID</th>
+                    <th>Scenario & Summary</th>
+                    <th>Duration</th>
+                    <th>Sentiment</th>
+                    <th>Grounded?</th>
+                    <th>Avg Latency</th>
+                    <th>Timestamp</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="call-records-tbody">
+                  <tr><td colspan="9" class="text-center">Loading call records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
       </main>
     </div>
 
@@ -470,6 +746,42 @@
         </div>
         <div class="modal-body">
           <pre id="modal-content" class="modal-pre"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Call Transcript & Evaluation Detail Modal -->
+    <div class="modal-overlay" id="call-modal" style="display: none;">
+      <div class="modal-card modal-card-lg">
+        <div class="modal-header">
+          <div class="modal-header-info">
+            <h3 id="call-modal-title">Call Transcript & RAG Verification Audit</h3>
+            <span class="badge-status badge-success" id="call-modal-badge">Completed</span>
+          </div>
+          <button class="btn-icon-subtle" id="btn-close-call-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="call-modal-meta-grid">
+            <div class="meta-pill"><strong>Call ID:</strong> <span id="cm-id"></span></div>
+            <div class="meta-pill"><strong>Caller:</strong> <span id="cm-caller"></span></div>
+            <div class="meta-pill"><strong>Duration:</strong> <span id="cm-duration"></span></div>
+            <div class="meta-pill"><strong>Avg Latency:</strong> <span id="cm-latency"></span></div>
+            <div class="meta-pill"><strong>Groundedness:</strong> <span id="cm-grounded" class="text-emerald"></span></div>
+          </div>
+
+          <div class="modal-section-title">
+            <i class="fa-solid fa-comments text-indigo"></i> Full Verbatim Dialog Transcript
+          </div>
+          <div class="modal-transcript-feed" id="modal-transcript-feed"></div>
+
+          <div class="modal-section-title" style="margin-top: 1.5rem;">
+            <i class="fa-solid fa-square-check text-cyan"></i> RAG Groundedness & Source Citation Audit
+          </div>
+          <div class="modal-eval-list" id="modal-eval-list"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost-sm" id="btn-export-call-json"><i class="fa-solid fa-download"></i> Export JSON</button>
+          <button class="btn btn-primary-sm" id="btn-modal-close-action">Close</button>
         </div>
       </div>
     </div>

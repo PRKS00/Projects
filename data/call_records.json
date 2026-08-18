@@ -1,0 +1,444 @@
+[
+  {
+    "call_id": "CALL-20260818-7841",
+    "caller_number": "7857823345",
+    "agent_number": "+1 (800) 327-9492",
+    "call_type": "Inbound Web Call (WebRTC)",
+    "scenario": "General Policy Consultation",
+    "timestamp": "2026-08-18T21:48:46.812Z",
+    "duration_seconds": 4,
+    "status": "completed",
+    "overall_sentiment": "positive",
+    "is_grounded": true,
+    "avg_latency_ms": 145.0,
+    "summary": "Live softphone call session with 2 turns. All inquiries verified against knowledge base.",
+    "transcript": [
+      {
+        "turn_id": 1,
+        "speaker": "agent",
+        "text": "Thank you for calling DarwixAI Health Plus Support. I am your Q1 Voice Assistant. How may I assist you with your policy today?",
+        "timestamp_offset": "00:00",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 2,
+        "speaker": "agent",
+        "text": "Call ended. Recording and transcript saved to call records.",
+        "timestamp_offset": "00:04",
+        "citations": null,
+        "latency_ms": null
+      }
+    ],
+    "rag_evaluations": []
+  },
+  {
+    "call_id": "CALL-20260818-5184",
+    "caller_number": "7857823345",
+    "agent_number": "+1 (800) 327-9492",
+    "call_type": "Inbound Web Call (WebRTC)",
+    "scenario": "Inquiry: \"Hi....\"",
+    "timestamp": "2026-08-18T21:48:40.086Z",
+    "duration_seconds": 57,
+    "status": "completed",
+    "overall_sentiment": "positive",
+    "is_grounded": true,
+    "avg_latency_ms": 145.0,
+    "summary": "Live softphone call session with 4 turns. All inquiries verified against knowledge base.",
+    "transcript": [
+      {
+        "turn_id": 1,
+        "speaker": "agent",
+        "text": "Thank you for calling DarwixAI Health Plus Support. I am your Q1 Voice Assistant. How may I assist you with your policy today?",
+        "timestamp_offset": "00:00",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 2,
+        "speaker": "caller",
+        "text": "Hi.",
+        "timestamp_offset": "00:37",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 3,
+        "speaker": "agent",
+        "text": "I checked the policy documents, but that information is currently unavailable in the knowledge base.",
+        "timestamp_offset": "00:37",
+        "citations": [
+          {
+            "source": "C:\\Users\\priya\\OneDrive\\Desktop\\DarwixAI\\Projects\\data\\raw\\Introduction to Docker.pdf",
+            "filename": "Introduction to Docker.pdf",
+            "chunk_id": "Introduction to Docker.pdf_chunk_14",
+            "category": "general_policy",
+            "score": -0.2021,
+            "excerpt": "Repositories: A repository is a collection of related Docker images, typically different\nversions of the same application. Each repository can hold multiple tags, representing\ndifferent versions of an..."
+          },
+          {
+            "source": "C:\\Users\\priya\\OneDrive\\Desktop\\DarwixAI\\Projects\\data\\raw\\Introduction to Docker.pdf",
+            "filename": "Introduction to Docker.pdf",
+            "chunk_id": "Introduction to Docker.pdf_chunk_14",
+            "category": "general_policy",
+            "score": -0.2021,
+            "excerpt": "Repositories: A repository is a collection of related Docker images, typically different\nversions of the same application. Each repository can hold multiple tags, representing\ndifferent versions of an..."
+          },
+          {
+            "source": "data\\raw\\Introduction to Docker.pdf",
+            "filename": "Introduction to Docker.pdf",
+            "chunk_id": "Introduction to Docker.pdf_chunk_14",
+            "category": "general_policy",
+            "score": -0.2021,
+            "excerpt": "Repositories: A repository is a collection of related Docker images, typically different\nversions of the same application. Each repository can hold multiple tags, representing\ndifferent versions of an..."
+          }
+        ],
+        "latency_ms": null
+      },
+      {
+        "turn_id": 4,
+        "speaker": "agent",
+        "text": "Call ended. Recording and transcript saved to call records.",
+        "timestamp_offset": "00:57",
+        "citations": null,
+        "latency_ms": null
+      }
+    ],
+    "rag_evaluations": [
+      {
+        "query": "Hi.",
+        "grounded": true,
+        "latency_ms": 145
+      }
+    ]
+  },
+  {
+    "call_id": "CALL-2026-0819-01",
+    "caller_number": "+1 (555) 349-1029",
+    "caller_name": "John Miller",
+    "agent_number": "+1 (800) 327-9492",
+    "call_type": "Inbound Telephony (Twilio / Web Calling)",
+    "scenario": "Health Plan Deductibles, Family Maximum, and Primary Care Co-Pay",
+    "timestamp": "2026-08-19T02:15:30Z",
+    "duration_seconds": 48,
+    "status": "completed",
+    "overall_sentiment": "positive",
+    "is_grounded": true,
+    "avg_latency_ms": 142.5,
+    "summary": "Caller inquired about in-network individual deductible ($500) vs family deductible ($1,000) and primary care visit co-pay ($20). All answers successfully grounded in health_policy.md.",
+    "transcript": [
+      {
+        "turn_id": 1,
+        "speaker": "agent",
+        "text": "Thank you for calling DarwixAI Health Plus Support. I am your Q1 Voice Assistant. How may I assist you with your policy today?",
+        "timestamp_offset": "00:00",
+        "citations": null,
+        "latency_ms": 0.0
+      },
+      {
+        "turn_id": 2,
+        "speaker": "caller",
+        "text": "Hi, I'm trying to find out what my annual deductible is for individual in-network care under Health Plus.",
+        "timestamp_offset": "00:06",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 3,
+        "speaker": "agent",
+        "text": "The annual individual in-network deductible is $500, and the family deductible is $1,000.",
+        "timestamp_offset": "00:14",
+        "citations": [
+          {
+            "source": "health_policy.md",
+            "filename": "health_policy.md",
+            "chunk_id": "health_policy.md_chunk_0",
+            "category": "policy",
+            "score": 0.88,
+            "excerpt": "The policy covers 90% of all eligible medical expenses after the annual deductible is met. The annual individual in-network deductible is $500, and the family deductible is $1,000."
+          }
+        ],
+        "latency_ms": 139.2
+      },
+      {
+        "turn_id": 4,
+        "speaker": "caller",
+        "text": "And what is the co-pay for visiting a primary care physician in-network?",
+        "timestamp_offset": "00:23",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 5,
+        "speaker": "agent",
+        "text": "Co-pay for standard in-network primary care physician visits is fixed at $20 per visit.",
+        "timestamp_offset": "00:30",
+        "citations": [
+          {
+            "source": "health_policy.md",
+            "filename": "health_policy.md",
+            "chunk_id": "health_policy.md_chunk_0",
+            "category": "policy",
+            "score": 0.85,
+            "excerpt": "Co-pay for standard in-network primary care physician (PCP) visits is fixed at $20 per visit."
+          }
+        ],
+        "latency_ms": 145.8
+      },
+      {
+        "turn_id": 6,
+        "speaker": "caller",
+        "text": "Great, that helps a lot. Thank you!",
+        "timestamp_offset": "00:38",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 7,
+        "speaker": "agent",
+        "text": "You are very welcome! Have a wonderful and healthy day. Goodbye!",
+        "timestamp_offset": "00:43",
+        "citations": null,
+        "latency_ms": 0.0
+      }
+    ],
+    "rag_evaluations": [
+      {
+        "query": "What is the annual individual in-network deductible under Health Plus?",
+        "expected_terms": [
+          "$500",
+          "$1,000"
+        ],
+        "retrieved_source": "health_policy.md",
+        "grounded": true,
+        "latency_ms": 139.2
+      },
+      {
+        "query": "What is the co-pay for primary care physician visits in-network?",
+        "expected_terms": [
+          "$20"
+        ],
+        "retrieved_source": "health_policy.md",
+        "grounded": true,
+        "latency_ms": 145.8
+      }
+    ]
+  },
+  {
+    "call_id": "CALL-2026-0819-02",
+    "caller_number": "+1 (555) 782-4190",
+    "caller_name": "Sarah Jenkins",
+    "agent_number": "+1 (800) 327-9492",
+    "call_type": "Inbound Web Calling (WebRTC)",
+    "scenario": "Prescription Drug Formularies & Out-of-Network Non-Emergency Care",
+    "timestamp": "2026-08-19T02:25:10Z",
+    "duration_seconds": 55,
+    "status": "completed",
+    "overall_sentiment": "positive",
+    "is_grounded": true,
+    "avg_latency_ms": 138.0,
+    "summary": "Caller inquired regarding prescription tier co-payments (Tier 1 generic $10) and non-emergency out-of-network co-insurance (40% after $1,500 deductible).",
+    "transcript": [
+      {
+        "turn_id": 1,
+        "speaker": "agent",
+        "text": "Hello, welcome to Health Plus Voice Services. How can I help you today?",
+        "timestamp_offset": "00:00",
+        "citations": null,
+        "latency_ms": 0.0
+      },
+      {
+        "turn_id": 2,
+        "speaker": "caller",
+        "text": "Hello, could you tell me how much I will pay for Tier 1 generic prescription medications?",
+        "timestamp_offset": "00:05",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 3,
+        "speaker": "agent",
+        "text": "For Tier 1 generic medications, the co-payment is $10 per 30-day supply.",
+        "timestamp_offset": "00:13",
+        "citations": [
+          {
+            "source": "health_policy.md",
+            "filename": "health_policy.md",
+            "chunk_id": "health_policy.md_chunk_0",
+            "category": "policy",
+            "score": 0.91,
+            "excerpt": "Tier 1 (Generic Medications): $10 co-payment per 30-day supply."
+          }
+        ],
+        "latency_ms": 134.5
+      },
+      {
+        "turn_id": 4,
+        "speaker": "caller",
+        "text": "What about out-of-network non-emergency medical care?",
+        "timestamp_offset": "00:22",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 5,
+        "speaker": "agent",
+        "text": "Non-emergency out-of-network services require a 40% co-insurance by the member after an individual out-of-network deductible of $1,500.",
+        "timestamp_offset": "00:30",
+        "citations": [
+          {
+            "source": "health_policy.md",
+            "filename": "health_policy.md",
+            "chunk_id": "health_policy.md_chunk_0",
+            "category": "policy",
+            "score": 0.87,
+            "excerpt": "Non-emergency out-of-network services require a 40% co-insurance by the member after an individual out-of-network deductible of $1,500."
+          }
+        ],
+        "latency_ms": 141.5
+      },
+      {
+        "turn_id": 6,
+        "speaker": "caller",
+        "text": "Understood, thank you so much for the clarity.",
+        "timestamp_offset": "00:41",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 7,
+        "speaker": "agent",
+        "text": "My pleasure! Please reach out anytime if you need more assistance. Goodbye!",
+        "timestamp_offset": "00:46",
+        "citations": null,
+        "latency_ms": 0.0
+      }
+    ],
+    "rag_evaluations": [
+      {
+        "query": "What is the co-payment for Tier 1 generic medications?",
+        "expected_terms": [
+          "$10"
+        ],
+        "retrieved_source": "health_policy.md",
+        "grounded": true,
+        "latency_ms": 134.5
+      },
+      {
+        "query": "What are the rules for out-of-network non-emergency care?",
+        "expected_terms": [
+          "40%",
+          "$1,500"
+        ],
+        "retrieved_source": "health_policy.md",
+        "grounded": true,
+        "latency_ms": 141.5
+      }
+    ]
+  },
+  {
+    "call_id": "CALL-2026-0819-03",
+    "caller_number": "+1 (555) 612-8834",
+    "caller_name": "David Chen",
+    "agent_number": "+1 (800) 327-9492",
+    "call_type": "Inbound Telephony (Twilio Gateway)",
+    "scenario": "Claims Department PII Masking & Out-of-Domain Flight Refusal",
+    "timestamp": "2026-08-19T02:35:45Z",
+    "duration_seconds": 62,
+    "status": "completed",
+    "overall_sentiment": "neutral",
+    "is_grounded": true,
+    "avg_latency_ms": 149.0,
+    "summary": "Caller requested claims adjuster contact information (verifying PII masking of [EMAIL_REDACTED] and [PHONE_REDACTED]), followed by an out-of-domain airline refund question (verifying polite domain refusal).",
+    "transcript": [
+      {
+        "turn_id": 1,
+        "speaker": "agent",
+        "text": "Welcome to DarwixAI Voice Portal. How may I help you with your health benefits today?",
+        "timestamp_offset": "00:00",
+        "citations": null,
+        "latency_ms": 0.0
+      },
+      {
+        "turn_id": 2,
+        "speaker": "caller",
+        "text": "Hi there, I need the direct contact information for Alice Johnson in the claims department.",
+        "timestamp_offset": "00:06",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 3,
+        "speaker": "agent",
+        "text": "For claims and prior authorization inquiries, Alice Johnson in the claims processing department can be reached at [EMAIL_REDACTED] and [PHONE_REDACTED].",
+        "timestamp_offset": "00:15",
+        "citations": [
+          {
+            "source": "health_policy.md",
+            "filename": "health_policy.md",
+            "chunk_id": "health_policy.md_chunk_0",
+            "category": "policy",
+            "score": 0.89,
+            "excerpt": "Support Officer Direct: Alice Johnson (Staff ID: AJ-4421). Support Email: [EMAIL_REDACTED]. Member Hotline: [PHONE_REDACTED]."
+          }
+        ],
+        "latency_ms": 148.0
+      },
+      {
+        "turn_id": 4,
+        "speaker": "caller",
+        "text": "Okay. Can you also tell me what the refund policy is for cancelled international airline tickets?",
+        "timestamp_offset": "00:27",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 5,
+        "speaker": "agent",
+        "text": "I checked the policy documents, but that information is currently unavailable in the knowledge base. Health Plus policies cover healthcare and medical benefits, not commercial airline travel.",
+        "timestamp_offset": "00:36",
+        "citations": [],
+        "latency_ms": 150.0
+      },
+      {
+        "turn_id": 6,
+        "speaker": "caller",
+        "text": "Got it, that makes sense. Thanks for checking.",
+        "timestamp_offset": "00:49",
+        "citations": null,
+        "latency_ms": null
+      },
+      {
+        "turn_id": 7,
+        "speaker": "agent",
+        "text": "You are welcome. Feel free to call us back for any healthcare policy questions. Have a great day!",
+        "timestamp_offset": "00:54",
+        "citations": null,
+        "latency_ms": 0.0
+      }
+    ],
+    "rag_evaluations": [
+      {
+        "query": "What is the contact information for Alice Johnson in claims?",
+        "expected_terms": [
+          "[EMAIL_REDACTED]",
+          "[PHONE_REDACTED]"
+        ],
+        "retrieved_source": "health_policy.md",
+        "grounded": true,
+        "pii_sanitized": true,
+        "latency_ms": 148.0
+      },
+      {
+        "query": "What is the refund policy for cancelled international flight tickets?",
+        "expected_terms": [
+          "unavailable in the knowledge base"
+        ],
+        "retrieved_source": null,
+        "grounded": true,
+        "out_of_domain_refusal": true,
+        "latency_ms": 150.0
+      }
+    ]
+  }
+]

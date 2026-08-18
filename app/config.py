@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # Paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent
+    DATA_DIR: Path = BASE_DIR / "data"
     DATA_RAW_DIR: Path = BASE_DIR / "data" / "raw"
     DATA_PROCESSED_DIR: Path = BASE_DIR / "data" / "processed"
     CHROMA_PERSIST_DIR: str = str(BASE_DIR / "chroma_db")

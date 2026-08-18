@@ -1,0 +1,68 @@
+[
+  {
+    "call_id": "CALL-2026-0819-01",
+    "caller_name": "John Miller",
+    "scenario": "Deductibles & Co-Pay Verification",
+    "caller_number": "+1 (555) 349-1029",
+    "turns": [
+      {
+        "role": "caller",
+        "query": "Hi, I'm trying to find out what my annual deductible is for individual in-network care under Health Plus.",
+        "expected_terms": ["$500", "$1,000"],
+        "expected_available": true,
+        "source": "health_policy.md"
+      },
+      {
+        "role": "caller",
+        "query": "And what is the co-pay for visiting a primary care physician in-network?",
+        "expected_terms": ["$20"],
+        "expected_available": true,
+        "source": "health_policy.md"
+      }
+    ]
+  },
+  {
+    "call_id": "CALL-2026-0819-02",
+    "caller_name": "Sarah Jenkins",
+    "scenario": "Prescription Tiers & Out-of-Network Co-insurance",
+    "caller_number": "+1 (555) 782-4190",
+    "turns": [
+      {
+        "role": "caller",
+        "query": "Hello, could you tell me how much I will pay for Tier 1 generic prescription medications?",
+        "expected_terms": ["$10"],
+        "expected_available": true,
+        "source": "health_policy.md"
+      },
+      {
+        "role": "caller",
+        "query": "What about out-of-network non-emergency medical care?",
+        "expected_terms": ["40%", "$1,500"],
+        "expected_available": true,
+        "source": "health_policy.md"
+      }
+    ]
+  },
+  {
+    "call_id": "CALL-2026-0819-03",
+    "caller_name": "David Chen",
+    "scenario": "PII Masking & Out-of-Domain Refusal",
+    "caller_number": "+1 (555) 612-8834",
+    "turns": [
+      {
+        "role": "caller",
+        "query": "Hi there, I need the direct contact information for Alice Johnson in the claims department.",
+        "expected_terms": ["[EMAIL_REDACTED]", "[PHONE_REDACTED]"],
+        "expected_available": true,
+        "source": "health_policy.md"
+      },
+      {
+        "role": "caller",
+        "query": "Okay. Can you also tell me what the refund policy is for cancelled international airline tickets?",
+        "expected_terms": ["unavailable in the knowledge base"],
+        "expected_available": false,
+        "source": null
+      }
+    ]
+  }
+]

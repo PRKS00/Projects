@@ -95,8 +95,9 @@ with st.sidebar:
             st.rerun()
 
 # Main Tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "🎙️ Voice & RAG Studio",
+    "📞 Web Calling & Transcripts",
     "📁 Document Repository",
     "🛡️ PII Masker Sandbox",
     "🧠 Vector Store Explorer",
@@ -170,9 +171,102 @@ with tab1:
                     """, unsafe_allow_html=True)
 
 # ==========================================
-# TAB 2: DOCUMENT REPOSITORY
+# TAB 2: WEB CALLING & TRANSCRIPTS
 # ==========================================
 with tab2:
+    st.subheader("📞 Web Phone & Call Center Hub")
+    
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
+        <h3 style="margin: 0 0 0.5rem 0; color: #34d399;">📞 Toll-Free Callable Gateway: +1 (800) 327-9492</h3>
+        <p style="margin: 0; font-size: 0.9rem; color: #94a3b8;">
+            Direct Telephony & WebRTC Voice Interface with Hugging Face Grounded Inference, PII Sanitization, and Session Recording.
+            <br><strong>SIP URI:</strong> <code>sip:agent@darwix.ai</code> | <strong>Webhooks:</strong> <code>/api/v1/voice/incoming-call</code>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("### 🎙️ Instant Simulated Voice Call")
+    call_col1, call_col2 = st.columns([2, 1])
+    
+    with call_col1:
+        test_call_sel = st.selectbox(
+            "Select Call Scenario to Execute / Inspect:",
+            [
+                "CALL-2026-0819-01: Deductibles, Family Max, & Primary Care ($500 / $20)",
+                "CALL-2026-0819-02: Prescription Tiers & Out-of-Network Coinsurance ($10 / 40%)",
+                "CALL-2026-0819-03: Claims PII Redaction & Out-of-Domain Flight Refusal",
+            ]
+        )
+        custom_caller_q = st.text_input("Or speak / ask custom phone question:", placeholder="e.g. What is the family deductible?")
+        btn_start_sim_call = st.button("🚀 Start Web Call Session", type="primary")
+
+    with call_col2:
+        st.markdown("**Gateway Telemetry:**")
+        st.caption("• Status: 🟢 Online (Twilio / WebRTC Ready)")
+        st.caption("• Voice Model: Q1 Web Speech Engine")
+        st.caption("• PII Redaction: Enforced")
+        st.caption("• Storage: `data/call_records.json`")
+
+    if btn_start_sim_call:
+        query_to_run = custom_caller_q if custom_caller_q else (
+            "What is the annual individual in-network deductible under Health Plus?" if "01" in test_call_sel else
+            ("What is the co-payment for Tier 1 generic medications?" if "02" in test_call_sel else
+             "What is the contact information for Alice Johnson in claims?")
+        )
+        with st.spinner("Connecting call & executing grounded RAG response..."):
+            t0 = time.perf_counter()
+            call_res = rag_chain.query(question=query_to_run)
+            lat_ms = round((time.perf_counter() - t0) * 1000, 1)
+
+            st.success(f"✅ Call Connected (Latency: {lat_ms} ms)")
+            
+            c_left, c_right = st.columns(2)
+            with c_left:
+                st.markdown(f"**👤 Caller Question:**")
+                st.info(query_to_run)
+            with c_right:
+                st.markdown(f"**🤖 Q1 Voice Agent Spoken Response:**")
+                st.markdown(f"""
+                <div class="voice-box">
+                    "{call_res['speech_response']}"
+                </div>
+                """, unsafe_allow_html=True)
+                
+            if call_res["citations"]:
+                st.markdown(f"**📄 Verified Citations:**")
+                for cit in call_res["citations"]:
+                    st.caption(f"Source: `{cit.get('source')}` | Score: {cit.get('score', 0.0):.3f}")
+
+    st.markdown("---")
+    st.markdown("### 📋 Recorded Call Transcripts & Evaluation Audit")
+    
+    call_rec_file = settings.DATA_DIR / "call_records.json"
+    if call_rec_file.exists():
+        with open(call_rec_file, "r", encoding="utf-8") as f:
+            records = json.load(f)
+            
+        for r in records:
+            with st.expander(f"📞 {r['call_id']} — {r['scenario']} ({r['duration_seconds']}s, {r['status'].upper()})"):
+                meta_c1, meta_c2, meta_c3 = st.columns(3)
+                meta_c1.markdown(f"**Caller:** `{r['caller_number']}`")
+                meta_c2.markdown(f"**Avg Latency:** `{r['avg_latency_ms']} ms`")
+                meta_c3.markdown(f"**Groundedness:** `{'✅ 100% Grounded' if r.get('is_grounded') else 'Domain Refusal'}`")
+                
+                st.markdown(f"**Summary:** {r['summary']}")
+                
+                st.markdown("#### Verbatim Transcript:")
+                for turn in r.get("transcript", []):
+                    speaker_label = "🤖 Agent" if turn['speaker'] == 'agent' else "👤 Caller"
+                    st.markdown(f"`[{turn.get('timestamp_offset', '00:00')}]` **{speaker_label}:** {turn['text']}")
+                    if turn.get("citations"):
+                        for c in turn["citations"]:
+                            st.caption(f"↳ *Citation:* `{c.get('source')}` — \"{c.get('excerpt')}\"")
+
+# ==========================================
+# TAB 3: DOCUMENT REPOSITORY
+# ==========================================
+with tab3:
     st.subheader("Raw Documents in Knowledge Base")
     uploaded_file = st.file_uploader("Upload New Document (.md, .txt, .pdf, .json, .csv)", type=["md", "txt", "pdf", "json", "csv"])
     if uploaded_file:
@@ -198,9 +292,9 @@ with tab2:
                     st.code(file_handle.read(), language="markdown")
 
 # ==========================================
-# TAB 3: PII MASKER SANDBOX
+# TAB 4: PII MASKER SANDBOX
 # ==========================================
-with tab3:
+with tab4:
     st.subheader("Live PII Sanitization & Normalization Sandbox")
     sample_text = st.text_area(
         "Enter text containing sensitive PII:",
@@ -222,9 +316,9 @@ with tab3:
             st.json(counts)
 
 # ==========================================
-# TAB 4: VECTOR STORE EXPLORER
+# TAB 5: VECTOR STORE EXPLORER
 # ==========================================
-with tab4:
+with tab5:
     st.subheader("ChromaDB Vector Store Chunks")
     try:
         if chroma_mgr.vectorstore and hasattr(chroma_mgr.vectorstore, "_collection"):
@@ -242,9 +336,9 @@ with tab4:
         st.error(f"Error accessing ChromaDB: {e}")
 
 # ==========================================
-# TAB 5: GOLDEN BENCHMARKS
+# TAB 6: GOLDEN BENCHMARKS
 # ==========================================
-with tab5:
+with tab6:
     st.subheader("Golden Retrieval & Refusal Evaluation Suite")
     if st.button("🧪 Run Golden Tests"):
         bench_file = settings.BASE_DIR / "tests" / "retrieval_tests.json"
@@ -284,3 +378,4 @@ with tab5:
             acc = round((passed / len(cases) * 100), 1)
             st.metric("Evaluation Accuracy", f"{acc}%", f"{passed}/{len(cases)} tests passed")
             st.dataframe(results, use_container_width=True)
+

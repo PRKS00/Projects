@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
@@ -133,23 +134,57 @@ class RAGChainManager:
         if not docs:
             return "The requested information is unavailable in the knowledge base."
 
-        q_lower = question.lower()
-        relevant_snippets = []
-        for doc in docs:
-            for sentence in doc.page_content.split(". "):
-                if any(w in sentence.lower() for w in q_lower.split() if len(w) > 3):
-                    clean_s = sentence.strip()
-                    if clean_s and clean_s not in relevant_snippets:
-                        relevant_snippets.append(clean_s)
+        stop_words = {
+            "what", "which", "where", "when", "with", "from", "about", "policy",
+            "document", "information", "does", "have", "tell", "need", "give",
+            "know", "under", "help", "this", "that", "there", "these", "those",
+            "will", "would", "could", "should", "your", "they", "them", "their",
+            "the", "for", "and", "are", "per", "how", "much", "can", "you", "who", "all"
+        }
 
-        if not relevant_snippets:
+        q_lower = question.lower()
+        q_words = [w.strip("?,.:;!()\"'") for w in q_lower.split()]
+        key_words = [w for w in q_words if len(w) > 2 and w not in stop_words]
+
+        if not key_words:
+            key_words = [w for w in q_words if len(w) > 2]
+
+        relevant_snippets = []
+        matched_any_keyword = False
+
+        for doc in docs:
+            # Paragraph level check
+            paragraphs = doc.page_content.split("\n\n")
+            for p in paragraphs:
+                p_clean = p.strip()
+                if not p_clean or p_clean.startswith("# Health Plus Premium"):
+                    continue
+                p_lower = p_clean.lower()
+                
+                # Check keyword matches
+                matching_keys = [kw for kw in key_words if kw in p_lower]
+                if matching_keys:
+                    matched_any_keyword = True
+                    # Remove section markdown headers from inline snippet text if present
+                    clean_p = p_clean
+                    for line in p_clean.split("\n"):
+                        if line.startswith("## "):
+                            clean_p = clean_p.replace(line, "").strip()
+                    if clean_p and clean_p not in relevant_snippets:
+                        relevant_snippets.append(clean_p)
+
+        if not matched_any_keyword or not relevant_snippets:
             return "The requested information is unavailable in the knowledge base."
 
-        sources = list({d.metadata.get("source", "health_policy.md") for d in docs})
-        answer_text = " ".join(relevant_snippets[:3])
+        # Extract clean source name (basename)
+        sources = list({Path(d.metadata.get("source", "health_policy.md")).name for d in docs})
+        answer_text = " ".join(relevant_snippets[:2])
+        answer_text = answer_text.replace("\n- ", " ").replace("\n", " ").strip()
         if not answer_text.endswith("."):
             answer_text += "."
+
         return f"{answer_text} (Source: {', '.join(sources)})"
+
 
     def query(
         self,
@@ -186,14 +221,18 @@ class RAGChainManager:
         context_str = self._format_context(retrieved_docs)
 
         if self._llm:
-            prompt = PromptTemplate.from_template(RAG_SYSTEM_PROMPT).format(
-                context=context_str,
-                question=question,
-            )
-            if hasattr(response, "content"):
-                answer_text = response.content.strip()
-            else:
-                answer_text = str(response).strip()
+            try:
+                prompt = PromptTemplate.from_template(RAG_SYSTEM_PROMPT).format(
+                    context=context_str,
+                    question=question,
+                )
+                response = self._llm.invoke(prompt)
+                if hasattr(response, "content"):
+                    answer_text = response.content.strip()
+                else:
+                    answer_text = str(response).strip()
+            except Exception:
+                answer_text = self._mock_grounded_generator(question, retrieved_docs)
         else:
             answer_text = self._mock_grounded_generator(question, retrieved_docs)
 
@@ -202,10 +241,12 @@ class RAGChainManager:
         # 4. Generate Voice Agent speech response (short, clean, spoken tone for Q1 bot)
         if is_available:
             speech_response = answer_text.split("(Source:")[0].strip()
-            # Clean formatting for speech
-            speech_response = speech_response.replace("**", "").replace("#", "").replace("\n", " ")
+            # Clean formatting for speech synthesis
+            speech_response = speech_response.replace("**", "").replace("#", "").replace("\n", " ").strip()
+            if not speech_response.endswith((".", "!", "?")):
+                speech_response += "."
         else:
-            speech_response = "I checked the policy documents, but that information is currently unavailable."
+            speech_response = "I checked the policy documents, but that information is currently unavailable in the knowledge base."
 
         return {
             "question": question,
@@ -215,3 +256,4 @@ class RAGChainManager:
             "citations": citations,
             "retrieved_count": len(retrieved_docs),
         }
+

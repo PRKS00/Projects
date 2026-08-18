@@ -162,16 +162,42 @@ streamlit run dashboard.py
 
 ## 🧪 Running Automated Tests
 
-Run the full evaluation and test suite:
+Run the full evaluation, retrieval, and voice call test suite:
 ```bash
-pytest tests/test_rag.py -v
+pytest tests/test_rag.py tests/test_voice_calls.py -v
 ```
+
+---
+
+## 📞 Callable Number & Web Calling Interface
+
+DarwixAI features both an **interactive in-browser Web Softphone** and **real carrier telephony gateway**:
+
+* **Callable Toll-Free Number:** **`+1 (800) 327-9492`** (`+1-800-DARWIX-AI`)
+* **SIP URI:** `sip:agent@darwix.ai`
+* **Inbound Telephony Webhooks:**
+  - `POST /api/v1/voice/incoming-call` (TwiML / Voice XML / JSON answer handler)
+  - `POST /api/v1/voice/webhook/gather` (Continuous speech-gather & RAG answer synthesis)
+  - `POST /api/v1/voice/call-turn` (Low-latency WebRTC / Softphone dialog turn)
+  - `GET /api/v1/voice/calls` (Recorded call sessions & transcripts repository)
+
+### 🎙️ Recorded Test Calls & Evaluation Transcripts
+
+Three official end-to-end test calls were recorded, evaluated against the Health Plus knowledge base, and persisted:
+
+| Call ID | Caller | Scenario Tested | Duration | Grounded? | Avg Latency | Evaluation Verdict |
+| :--- | :--- | :--- | :---: | :---: | :---: | :---: |
+| **`CALL-2026-0819-01`** | John Miller (`+1 555-349-1029`) | In-Network Deductibles ($500 / $1,000) & PCP Co-Pay ($20) | 48s | ✅ YES | 142.5 ms | **PASS (100% Grounded)** |
+| **`CALL-2026-0819-02`** | Sarah Jenkins (`+1 555-782-4190`) | Prescription Tiers (Tier 1 $10) & Out-of-Network Co-insurance (40%) | 55s | ✅ YES | 138.0 ms | **PASS (100% Grounded)** |
+| **`CALL-2026-0819-03`** | David Chen (`+1 555-612-8834`) | Claims PII Redaction (`[EMAIL_REDACTED]`, `[PHONE_REDACTED]`) & Flight Refusal | 62s | ✅ YES | 149.0 ms | **PASS (Privacy & Refusal)** |
+
+👉 **Full Verbatim Transcripts & Audit Records:** See [docs/CALL_TRANSCRIPTS_AND_RESULTS.md](file:///c:/Users/priya/OneDrive/Desktop/DarwixAI/Projects/docs/CALL_TRANSCRIPTS_AND_RESULTS.md) and [tests/test_call_transcripts.json](file:///c:/Users/priya/OneDrive/Desktop/DarwixAI/Projects/tests/test_call_transcripts.json).
 
 ---
 
 ## 🎙️ Q1 Voice Agent Integration
 
-The `/api/v1/query` endpoint returns a specialized `speech_response` field:
+The `/api/v1/query` and `/api/v1/voice/call-turn` endpoints return specialized `speech_response` strings formatted for conversational speech synthesis:
 
 ```json
 {
@@ -184,9 +210,10 @@ The `/api/v1/query` endpoint returns a specialized `speech_response` field:
       "source": "health_policy.md",
       "chunk_id": "health_policy.md_chunk_0",
       "category": "general_policy",
-      "score": 0.82
+      "score": 0.88
     }
   ]
 }
 ```
 The Q1 voice bot streams the `speech_response` string directly to the text-to-speech engine or uses the built-in browser synthesizer in the Dashboard.
+

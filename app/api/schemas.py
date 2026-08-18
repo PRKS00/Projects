@@ -115,3 +115,71 @@ class StatsResponse(BaseModel):
     top_k: int
     top_n: int
 
+
+# ==========================================
+# Voice Calling & Telephony Schemas
+# ==========================================
+
+class PhoneConfigResponse(BaseModel):
+    phone_number: str = Field(default="+1 (800) 327-9492", description="Callable Toll-Free Number (+1-800-DARWIX-AI)")
+    phone_number_numeric: str = Field(default="+18003279492", description="E.164 Numeric format")
+    sip_uri: str = Field(default="sip:agent@darwix.ai", description="Direct SIP Endpoint")
+    webrtc_supported: bool = Field(default=True, description="Whether in-browser WebRTC / Web Audio calling is enabled")
+    telephony_provider: str = Field(default="Twilio / Telnyx / SIP Trunk Ready", description="Telephony gateway compatibility")
+    voice_agent_name: str = Field(default="Q1 Healthcare Voice Agent", description="Name of the conversational voice agent")
+    webhook_inbound_url: str = Field(default="/api/v1/voice/incoming-call", description="Webhook for incoming carrier calls")
+    webhook_gather_url: str = Field(default="/api/v1/voice/webhook/gather", description="Webhook for continuous telephony speech gather")
+
+
+class CallTurn(BaseModel):
+    turn_id: int
+    speaker: str = Field(..., description="'caller' or 'agent'")
+    text: str = Field(..., description="Spoken transcript of this turn")
+    timestamp_offset: str = Field(default="00:00", description="Offset in MM:SS format")
+    citations: Optional[List[CitationItem]] = Field(default=None, description="Citations if speaker is agent")
+    latency_ms: Optional[float] = Field(default=None, description="Inference latency for this turn")
+
+
+class CallRecord(BaseModel):
+    call_id: str
+    caller_number: str
+    agent_number: str = "+1 (800) 327-9492"
+    call_type: str = Field(default="Inbound Web Call", description="'Inbound Web Call', 'Telephony Call', or 'Simulated Test Call'")
+    scenario: str
+    timestamp: str
+    duration_seconds: int
+    status: str = "completed"
+    overall_sentiment: str = "positive"
+    is_grounded: bool = True
+    avg_latency_ms: float
+    summary: str
+    transcript: List[CallTurn]
+    rag_evaluations: Optional[List[Dict[str, Any]]] = None
+
+
+class CallListResponse(BaseModel):
+    count: int
+    calls: List[CallRecord]
+
+
+class CallTurnRequest(BaseModel):
+    call_id: str = Field(..., description="Unique active call session identifier")
+    user_speech: str = Field(..., description="Spoken utterance recognized from the caller")
+    caller_number: Optional[str] = Field(default="+1 (555) 019-2834", description="Caller phone number or web client ID")
+    conversation_history: Optional[List[Dict[str, str]]] = Field(default=None, description="List of previous turns [{'role': 'user'|'assistant', 'content': '...'}]")
+    top_k: Optional[int] = Field(default=10)
+    top_n: Optional[int] = Field(default=3)
+
+
+class CallTurnResponse(BaseModel):
+    call_id: str
+    turn_id: int
+    user_speech: str
+    speech_response: str
+    full_answer: str
+    is_available: bool
+    citations: List[CitationItem]
+    latency_ms: float
+    timestamp_offset: str
+
+

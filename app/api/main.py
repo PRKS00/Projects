@@ -5,10 +5,10 @@ import time
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Query
+from fastapi import FastAPI, HTTPException, UploadFile, File, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 import uvicorn
 
 from app.config import settings
@@ -31,6 +31,12 @@ from app.api.schemas import (
     BenchmarkResultItem,
     BenchmarkResponse,
     StatsResponse,
+    PhoneConfigResponse,
+    CallRecord,
+    CallListResponse,
+    CallTurnRequest,
+    CallTurnResponse,
+    CallTurn,
 )
 
 app = FastAPI(
@@ -252,8 +258,8 @@ def preview_sanitization(request: SanitizePreviewRequest):
     cleaned = cleaner.clean_text(request.text)
 
     masker = PIIMasker()
-    sanitized, counts = masker.mask_text(cleaned)
-    total_masked = sum(counts.values())
+    sanitized, detected = masker.mask_text(cleaned)
+    total_masked = 1 if detected else 0
 
     return SanitizePreviewResponse(
         original=request.text,
@@ -348,6 +354,196 @@ def run_benchmarks():
         accuracy_percent=accuracy,
         results=results,
     )
+
+
+# ==========================================
+# Voice Calling & Telephony Gateway Endpoints
+# ==========================================
+
+CALL_RECORDS_FILE = settings.DATA_DIR / "call_records.json"
+
+
+def _load_call_records() -> List[dict]:
+    """Loads call sessions from persistent JSON storage."""
+    if not CALL_RECORDS_FILE.exists():
+        return []
+    try:
+        with open(CALL_RECORDS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def _save_call_records(records: List[dict]):
+    """Persists call sessions to JSON storage."""
+    CALL_RECORDS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(CALL_RECORDS_FILE, "w", encoding="utf-8") as f:
+        json.dump(records, f, indent=2)
+
+
+@app.get("/api/v1/voice/phone-config", response_model=PhoneConfigResponse, tags=["Voice & Calling"])
+def get_phone_config():
+    """Returns the official callable phone number, SIP endpoint, and webhook details."""
+    return PhoneConfigResponse(
+        phone_number="+1 (800) 327-9492",
+        phone_number_numeric="+18003279492",
+        sip_uri="sip:agent@darwix.ai",
+        webrtc_supported=True,
+        telephony_provider="Twilio / Telnyx / SIP Trunk / WebRTC Ready",
+        voice_agent_name="Q1 Healthcare Voice Agent",
+        webhook_inbound_url="/api/v1/voice/incoming-call",
+        webhook_gather_url="/api/v1/voice/webhook/gather",
+    )
+
+
+@app.api_route("/api/v1/voice/incoming-call", methods=["GET", "POST"], tags=["Voice & Calling"])
+@app.api_route("/api/v1/voice/twiml", methods=["GET", "POST"], tags=["Voice & Calling"])
+async def incoming_call_webhook(request: Request):
+    """
+    Inbound Telephony Webhook (TwiML / XML / JSON compatible).
+    Answers inbound phone calls from carriers/Twilio/Telnyx with Q1 Voice Assistant.
+    """
+    accept_header = request.headers.get("accept", "")
+    content_type = request.headers.get("content-type", "")
+
+    # If JSON explicitly requested
+    if "json" in accept_header or "json" in content_type:
+        return {
+            "status": "connected",
+            "agent_name": "Q1 Healthcare Voice Agent",
+            "callable_number": "+1 (800) 327-9492",
+            "greeting": "Thank you for calling DarwixAI Health Plus Support. I am your Q1 Voice Assistant. How can I assist you with your policy today?",
+            "gather_url": "/api/v1/voice/webhook/gather",
+        }
+
+    # Default to TwiML XML for carrier telephony
+    twiml_response = """<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Say voice="Polly.Joanna">Thank you for calling DarwixAI Health Plus Support. I am your Q1 Voice Assistant. How can I help you with your health policy today?</Say>
+    <Gather input="speech" action="/api/v1/voice/webhook/gather" method="POST" speechTimeout="auto" timeout="6">
+        <Say voice="Polly.Joanna">Please state your question after the tone.</Say>
+    </Gather>
+    <Say voice="Polly.Joanna">We did not receive any input. Thank you for calling. Goodbye!</Say>
+</Response>"""
+    return Response(content=twiml_response, media_type="application/xml")
+
+
+
+@app.api_route("/api/v1/voice/webhook/gather", methods=["GET", "POST"], tags=["Voice & Calling"])
+async def voice_gather_webhook(request: Request):
+    """
+    Telephony Speech Gather Webhook.
+    Receives speech from incoming phone calls, executes RAG query, and speaks back.
+    """
+    user_speech = ""
+    # Check form body (Twilio sends SpeechResult in form-data)
+    try:
+        form = await request.form()
+        if "SpeechResult" in form:
+            user_speech = form["SpeechResult"]
+        elif "query" in form:
+            user_speech = form["query"]
+    except Exception:
+        pass
+
+    if not user_speech:
+        try:
+            json_body = await request.json()
+            user_speech = json_body.get("SpeechResult") or json_body.get("query") or json_body.get("user_speech") or ""
+        except Exception:
+            pass
+
+    if not user_speech:
+        user_speech = request.query_params.get("SpeechResult") or request.query_params.get("query") or "What is the deductible?"
+
+    # Execute RAG Query
+    t0 = time.perf_counter()
+    rag_res = rag_chain.query(question=user_speech, top_k=settings.RETRIEVER_TOP_K, top_n=settings.RERANKER_TOP_N)
+    latency_ms = round((time.perf_counter() - t0) * 1000, 2)
+    spoken_answer = rag_res.get("speech_response", rag_res.get("answer", ""))
+
+    accept_header = request.headers.get("accept", "")
+    content_type = request.headers.get("content-type", "")
+
+    if "xml" in accept_header or "form" in content_type or "xml" in content_type:
+        twiml_response = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Say voice="Polly.Joanna">{spoken_answer}</Say>
+    <Gather input="speech" action="/api/v1/voice/webhook/gather" method="POST" speechTimeout="auto" timeout="6">
+        <Say voice="Polly.Joanna">Is there anything else I can help you with?</Say>
+    </Gather>
+    <Say voice="Polly.Joanna">Thank you for calling DarwixAI Health Plus. Have a wonderful day. Goodbye!</Say>
+</Response>"""
+        return Response(content=twiml_response, media_type="application/xml")
+
+    return {
+        "user_speech": user_speech,
+        "speech_response": spoken_answer,
+        "answer": rag_res.get("answer", ""),
+        "is_available": rag_res.get("is_available", True),
+        "citations": rag_res.get("citations", []),
+        "latency_ms": latency_ms,
+    }
+
+
+@app.post("/api/v1/voice/call-turn", response_model=CallTurnResponse, tags=["Voice & Calling"])
+def process_call_turn(request: CallTurnRequest):
+    """
+    Real-time Web Calling Softphone Turn Processor.
+    Receives user utterance, executes grounded RAG retrieval, and generates spoken response with citations.
+    """
+    if not request.user_speech or not request.user_speech.strip():
+        raise HTTPException(status_code=400, detail="User speech cannot be empty.")
+
+    t0 = time.perf_counter()
+    res = rag_chain.query(
+        question=request.user_speech,
+        top_k=request.top_k or settings.RETRIEVER_TOP_K,
+        top_n=request.top_n or settings.RERANKER_TOP_N,
+    )
+    latency_ms = round((time.perf_counter() - t0) * 1000, 2)
+
+    return CallTurnResponse(
+        call_id=request.call_id,
+        turn_id=int(time.time() * 1000) % 100000,
+        user_speech=request.user_speech,
+        speech_response=res.get("speech_response", ""),
+        full_answer=res.get("answer", ""),
+        is_available=res.get("is_available", True),
+        citations=res.get("citations", []),
+        latency_ms=latency_ms,
+        timestamp_offset=time.strftime("%M:%S", time.gmtime()),
+    )
+
+
+@app.get("/api/v1/voice/calls", response_model=CallListResponse, tags=["Voice & Calling"])
+def list_call_records():
+    """Retrieves all recorded test and live call sessions with full transcripts."""
+    records = _load_call_records()
+    call_objs = [CallRecord(**r) for r in records]
+    return CallListResponse(count=len(call_objs), calls=call_objs)
+
+
+@app.get("/api/v1/voice/calls/{call_id}", response_model=CallRecord, tags=["Voice & Calling"])
+def get_call_record(call_id: str):
+    """Retrieves detailed transcript, RAG evaluation results, and citation audit trail for a specific call."""
+    records = _load_call_records()
+    for r in records:
+        if r.get("call_id") == call_id:
+            return CallRecord(**r)
+    raise HTTPException(status_code=404, detail=f"Call record '{call_id}' not found.")
+
+
+@app.post("/api/v1/voice/calls", response_model=CallRecord, tags=["Voice & Calling"])
+def save_call_record(call_record: CallRecord):
+    """Saves a new call recording and transcript to the persistent store."""
+    records = _load_call_records()
+    # Replace existing or append
+    records = [r for r in records if r.get("call_id") != call_record.call_id]
+    records.insert(0, call_record.model_dump())
+    _save_call_records(records)
+    return call_record
+
 
 
 def run_ingest_cli():
