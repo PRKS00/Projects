@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments & Virtualenv
+.venv/
+env/
+venv/
+ENV/
+
+# Database & Chroma store
+chroma_db/
+*.db
+*.sqlite3
+
+# Environment variables
+.env
+
+# Logs and test artifacts
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Processed temp cache
+data/processed/*
+!data/processed/.gitkeep

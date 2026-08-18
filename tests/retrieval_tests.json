@@ -1,0 +1,44 @@
+[
+  {
+    "id": "test_01_eligibility",
+    "query": "Who is eligible for Health Plus?",
+    "expected_available": true,
+    "expected_terms": ["18 and 65", "spouses", "dependent children"],
+    "expected_source": "health_policy.md"
+  },
+  {
+    "id": "test_02_deductible",
+    "query": "What is the annual individual in-network deductible?",
+    "expected_available": true,
+    "expected_terms": ["$500"],
+    "expected_source": "health_policy.md"
+  },
+  {
+    "id": "test_03_prescription_tiers",
+    "query": "What is the co-payment for Tier 1 generic medications?",
+    "expected_available": true,
+    "expected_terms": ["$10"],
+    "expected_source": "health_policy.md"
+  },
+  {
+    "id": "test_04_exclusions",
+    "query": "Are cosmetic surgeries or aromatherapy covered?",
+    "expected_available": true,
+    "expected_terms": ["does not cover elective cosmetic surgeries", "alternative holistic therapies"],
+    "expected_source": "health_policy.md"
+  },
+  {
+    "id": "test_05_pii_sanitization",
+    "query": "What is the contact information for Alice Johnson in claims?",
+    "expected_available": true,
+    "expected_terms": ["[EMAIL_REDACTED]", "[PHONE_REDACTED]"],
+    "expected_source": "health_policy.md"
+  },
+  {
+    "id": "test_06_out_of_domain_negative",
+    "query": "What is the refund policy for cancelled international flight tickets?",
+    "expected_available": false,
+    "expected_terms": ["unavailable in the knowledge base"],
+    "expected_source": null
+  }
+]
