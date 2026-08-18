@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DarwixAI — Enterprise RAG & Q1 Voice Agent Studio</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark-theme">
+  <div class="app-layout">
+    
+    <!-- Top Global Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-logo">
+          <div class="logo-icon"><i class="fa-solid fa-atom"></i></div>
+          <div class="brand-info">
+            <span class="brand-name">Darwix<span class="highlight">AI</span></span>
+            <span class="brand-tag">Enterprise RAG & Voice Pipeline</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="telemetry-pill">
+          <span class="pulse-dot"></span>
+          <span class="telemetry-label">Embeddings:</span>
+          <span class="telemetry-val" id="header-emb-model">sentence-transformers</span>
+        </div>
+        <div class="telemetry-pill">
+          <i class="fa-solid fa-bolt text-amber"></i>
+          <span class="telemetry-label">LLM:</span>
+          <span class="telemetry-val" id="header-llm-model">google/flan-t5</span>
+        </div>
+        <div class="telemetry-pill">
+          <i class="fa-solid fa-layer-group text-cyan"></i>
+          <span class="telemetry-label">Chunks:</span>
+          <span class="telemetry-val" id="header-chunk-count">0</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button class="btn btn-outline-sm" id="btn-quick-ingest" title="Re-index Knowledge Base">
+          <i class="fa-solid fa-rotate"></i> <span>Sync Base</span>
+        </button>
+        <a href="/docs" target="_blank" class="btn btn-ghost-sm" title="FastAPI Swagger Documentation">
+          <i class="fa-solid fa-book"></i> <span>API Docs</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="app-body">
+      
+      <!-- Navigation Sidebar -->
+      <aside class="app-sidebar">
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-tab="studio">
+            <i class="fa-solid fa-microphone-lines"></i>
+            <span>Voice & RAG Studio</span>
+          </button>
+          <button class="nav-item" data-tab="knowledge">
+            <i class="fa-solid fa-database"></i>
+            <span>Knowledge Base</span>
+            <span class="badge-count" id="nav-doc-count">0</span>
+          </button>
+          <button class="nav-item" data-tab="sanitizer">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>PII Redaction Studio</span>
+          </button>
+          <button class="nav-item" data-tab="vectorstore">
+            <i class="fa-solid fa-cubes-stacked"></i>
+            <span>Vector DB Chunks</span>
+          </button>
+          <button class="nav-item" data-tab="benchmarks">
+            <i class="fa-solid fa-vial-circle-check"></i>
+            <span>Evaluation Suite</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="system-status-card">
+            <div class="status-header">
+              <span class="status-indicator"></span>
+              <span class="status-title">Hugging Face Pipeline</span>
+            </div>
+            <div class="status-detail">Zero-cost CPU / GPU Ready</div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Stage Viewports -->
+      <main class="app-main">
+
+        <!-- ==============================================
+             TAB 1: RAG & Q1 VOICE AGENT STUDIO
+             ============================================== -->
+        <section class="tab-pane active" id="pane-studio">
+          <div class="studio-grid">
+            
+            <!-- Left: Query & Controls -->
+            <div class="studio-left">
+              
+              <div class="panel query-box-panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <i class="fa-solid fa-terminal text-indigo"></i>
+                    <span>Knowledge Query Console</span>
+                  </div>
+                  <div class="tuning-toggle">
+                    <button class="btn-icon-subtle" id="btn-toggle-tuning" title="Tuning Parameters">
+                      <i class="fa-solid fa-sliders"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Query Input Container -->
+                <div class="query-input-wrap">
+                  <textarea id="query-input" placeholder="Ask any enterprise policy question (or click the microphone to speak)..." rows="3"></textarea>
+                  <div class="query-actions-bar">
+                    <div class="input-actions-left">
+                      <button class="mic-btn" id="btn-mic" title="Voice Input (Speech-to-Text)">
+                        <i class="fa-solid fa-microphone"></i>
+                      </button>
+                      <span class="mic-status" id="mic-status-label"></span>
+                    </div>
+                    <div class="input-actions-right">
+                      <button class="btn btn-ghost-sm" id="btn-clear-query">Clear</button>
+                      <button class="btn btn-primary" id="btn-submit-query">
+                        <i class="fa-solid fa-paper-plane"></i> <span>Execute RAG</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Quick Prompts Bar -->
+                <div class="quick-prompts-section">
+                  <span class="quick-label">Sample Prompts:</span>
+                  <div class="prompt-chips">
+                    <button class="chip" data-query="What is the annual individual in-network deductible?">💵 Deductible</button>
+                    <button class="chip" data-query="Who is eligible for Health Plus insurance?">👥 Eligibility</button>
+                    <button class="chip" data-query="What are the copays for prescription medications?">💊 Prescriptions</button>
+                    <button class="chip" data-query="Are cosmetic surgeries or aromatherapy covered?">🚫 Exclusions</button>
+                    <button class="chip" data-query="What is the contact info for Alice Johnson in claims?">🔒 PII Masked Contact</button>
+                    <button class="chip" data-query="What is the cancellation refund policy for international flights?">✈️ Out-of-Domain Refusal</button>
+                  </div>
+                </div>
+
+                <!-- Expandable Retrieval Tuning -->
+                <div class="tuning-drawer" id="tuning-drawer">
+                  <div class="tuning-grid">
+                    <div class="tuning-field">
+                      <label>Top-K Candidates: <span id="val-top-k">10</span></label>
+                      <input type="range" id="slider-top-k" min="3" max="25" value="10" step="1">
+                    </div>
+                    <div class="tuning-field">
+                      <label>Reranker Top-N: <span id="val-top-n">3</span></label>
+                      <input type="range" id="slider-top-n" min="1" max="10" value="3" step="1">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Q1 Voice Agent Interactive Player -->
+              <div class="panel voice-agent-panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <i class="fa-solid fa-headset text-emerald"></i>
+                    <span>Q1 Voice Agent Player</span>
+                  </div>
+                  <div class="voice-badge">
+                    <i class="fa-solid fa-wave-square"></i> Web Speech Audio Engine
+                  </div>
+                </div>
+
+                <div class="voice-player-body">
+                  <div class="waveform-container" id="waveform-box">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                  </div>
+
+                  <div class="voice-speech-text" id="voice-speech-box">
+                    <em>Voice response will be synthesized here when you query the knowledge base...</em>
+                  </div>
+
+                  <div class="voice-controls">
+                    <div class="controls-left">
+                      <button class="btn btn-emerald-sm" id="btn-play-voice" disabled>
+                        <i class="fa-solid fa-play"></i> <span>Play Speech</span>
+                      </button>
+                      <button class="btn btn-outline-sm" id="btn-stop-voice" disabled>
+                        <i class="fa-solid fa-stop"></i> <span>Stop</span>
+                      </button>
+                    </div>
+                    <div class="controls-right">
+                      <div class="rate-control">
+                        <label>Speed:</label>
+                        <select id="voice-rate-select">
+                          <option value="0.9">0.9x</option>
+                          <option value="1.0" selected>1.0x (Normal)</option>
+                          <option value="1.15">1.15x</option>
+                          <option value="1.25">1.25x</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right: Grounded Answer & Citations -->
+            <div class="studio-right">
+              
+              <div class="panel answer-panel">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <i class="fa-solid fa-square-check text-cyan"></i>
+                    <span>Grounded Answer & Citations</span>
+                  </div>
+                  <div id="availability-badge" class="badge-status badge-neutral">Ready</div>
+                </div>
+
+                <div class="answer-body" id="answer-body">
+                  <div class="empty-state">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <p>Enter a query to view grounded knowledge answers with exact source citations.</p>
+                  </div>
+                </div>
+
+                <!-- Citations Section -->
+                <div class="citations-section" id="citations-wrapper" style="display: none;">
+                  <div class="section-title">
+                    <i class="fa-solid fa-book-bookmark text-indigo"></i>
+                    <span>Source Citations (<span id="citation-count">0</span>)</span>
+                  </div>
+                  <div class="citations-list" id="citations-list"></div>
+                </div>
+              </div>
+
+              <!-- Context Debugger Accordion -->
+              <div class="panel debug-panel">
+                <details class="debug-accordion">
+                  <summary>
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                    <span>RAG Execution Context & Raw Chunks</span>
+                  </summary>
+                  <div class="debug-content" id="debug-content-body">
+                    <em>Execute a query to inspect the raw context chunks and ranking scores.</em>
+                  </div>
+                </details>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- ==============================================
+             TAB 2: KNOWLEDGE BASE & INGESTION
+             ============================================== -->
+        <section class="tab-pane" id="pane-knowledge">
+          <div class="knowledge-grid">
+            
+            <!-- Ingestion Control & Upload -->
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <i class="fa-solid fa-cloud-arrow-up text-indigo"></i>
+                  <span>Document Ingestion & File Upload</span>
+                </div>
+                <button class="btn btn-primary-sm" id="btn-run-full-ingest">
+                  <i class="fa-solid fa-arrows-rotate"></i> <span>Run Pipeline Ingestion</span>
+                </button>
+              </div>
+
+              <div class="upload-dropzone" id="upload-dropzone">
+                <i class="fa-solid fa-file-arrow-up dropzone-icon"></i>
+                <div class="dropzone-text">
+                  <strong>Drag & drop documents here</strong> or <span class="browse-link">browse files</span>
+                </div>
+                <div class="dropzone-hint">Supports Markdown (.md), PDF (.pdf), Text (.txt), CSV (.csv), JSON (.json)</div>
+                <input type="file" id="file-upload-input" multiple accept=".md,.txt,.pdf,.csv,.json" style="display: none;">
+              </div>
+
+              <!-- Ingestion Feedback Bar -->
+              <div class="ingest-status-box" id="ingest-status-box" style="display: none;">
+                <div class="status-msg" id="ingest-status-text"></div>
+              </div>
+            </div>
+
+            <!-- Document Repository Table -->
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <i class="fa-solid fa-folder-open text-cyan"></i>
+                  <span>Indexed Raw Documents (<span id="doc-table-count">0</span>)</span>
+                </div>
+                <button class="btn btn-ghost-sm" id="btn-refresh-docs">
+                  <i class="fa-solid fa-rotate-right"></i> <span>Refresh</span>
+                </button>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table" id="documents-table">
+                  <thead>
+                    <tr>
+                      <th>Filename</th>
+                      <th>Format</th>
+                      <th>Size</th>
+                      <th>Last Modified</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="docs-tbody">
+                    <tr><td colspan="5" class="text-center">Loading document repository...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ==============================================
+             TAB 3: PII REDACTION PLAYGROUND
+             ============================================== -->
+        <section class="tab-pane" id="pane-sanitizer">
+          <div class="sanitizer-layout">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <i class="fa-solid fa-user-shield text-indigo"></i>
+                  <span>Interactive PII Redaction & Normalization Sandbox</span>
+                </div>
+                <div class="sample-pills">
+                  <button class="chip" id="btn-sample-pii-1">Medical Record with SSN</button>
+                  <button class="chip" id="btn-sample-pii-2">Agent Contact Card</button>
+                  <button class="chip" id="btn-sample-pii-3">Billing & Card Details</button>
+                </div>
+              </div>
+
+              <div class="sanitizer-grid">
+                <div class="sanitizer-col">
+                  <label class="col-label"><i class="fa-solid fa-pen-to-square"></i> Raw Input Text:</label>
+                  <textarea id="pii-input-text" class="code-editor" placeholder="Type or paste text with sensitive data (SSNs, emails, phone numbers, cards, messy whitespace)..."></textarea>
+                  <div class="col-footer">
+                    <button class="btn btn-primary" id="btn-sanitize-now">
+                      <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Sanitize & Normalize</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="sanitizer-col">
+                  <div class="col-label-wrap">
+                    <label class="col-label"><i class="fa-solid fa-shield-check text-emerald"></i> Sanitized Output:</label>
+                    <span class="badge-tag" id="pii-redacted-badge">0 Redacted</span>
+                  </div>
+                  <div id="pii-output-box" class="code-preview-box">
+                    <em>Click "Sanitize & Normalize" to preview masked text and stripped whitespace...</em>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==============================================
+             TAB 4: VECTOR STORE CHUNK EXPLORER
+             ============================================== -->
+        <section class="tab-pane" id="pane-vectorstore">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <i class="fa-solid fa-cubes text-cyan"></i>
+                <span>ChromaDB Vector Store Explorer</span>
+              </div>
+              <div class="search-filter-box">
+                <input type="text" id="chunk-search-input" placeholder="Search chunk content...">
+                <button class="btn btn-ghost-sm" id="btn-refresh-chunks"><i class="fa-solid fa-rotate"></i></button>
+              </div>
+            </div>
+
+            <div class="chunks-grid" id="chunks-container">
+              <div class="text-center" style="grid-column: 1/-1; padding: 2rem;">Loading indexed ChromaDB chunks...</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==============================================
+             TAB 5: GOLDEN BENCHMARKS & EVALUATION
+             ============================================== -->
+        <section class="tab-pane" id="pane-benchmarks">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <i class="fa-solid fa-square-poll-vertical text-emerald"></i>
+                <span>Golden Retrieval & Generation Benchmark Suite</span>
+              </div>
+              <button class="btn btn-emerald" id="btn-run-benchmarks">
+                <i class="fa-solid fa-play"></i> <span>Run Benchmark Suite</span>
+              </button>
+            </div>
+
+            <div class="benchmark-stats-row">
+              <div class="metric-card">
+                <div class="metric-title">Accuracy Rate</div>
+                <div class="metric-val text-emerald" id="bench-accuracy">--%</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-title">Tests Evaluated</div>
+                <div class="metric-val text-indigo" id="bench-total">0</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-title">Tests Passed</div>
+                <div class="metric-val text-cyan" id="bench-passed">0</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-title">Avg Latency</div>
+                <div class="metric-val text-amber" id="bench-latency">-- ms</div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table" id="benchmark-results-table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Test ID</th>
+                    <th>Query</th>
+                    <th>Expected</th>
+                    <th>Actual Answer Snippet</th>
+                    <th>Latency</th>
+                    <th>Citations</th>
+                  </tr>
+                </thead>
+                <tbody id="benchmarks-tbody">
+                  <tr><td colspan="7" class="text-center">Click "Run Benchmark Suite" to evaluate RAG accuracy against golden test cases.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- Document Preview Modal -->
+    <div class="modal-overlay" id="doc-modal" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modal-filename">Document Preview</h3>
+          <button class="btn-icon-subtle" id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <pre id="modal-content" class="modal-pre"></pre>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main JavaScript Controller -->
+  <script src="/static/app.js"></script>
+</body>
+</html>

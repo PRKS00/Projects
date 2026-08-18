@@ -39,7 +39,46 @@ class RAGChainManager:
 
     def _init_llm(self):
         """Initializes the configured LLM provider or fallback."""
-        if self.llm_provider == "gemini":
+        if self.llm_provider in ("huggingface", "hf", "huggingface_local"):
+            try:
+                from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
+                from langchain_huggingface import HuggingFacePipeline
+
+                model_id = settings.HUGGINGFACE_LLM_MODEL or "google/flan-t5-base"
+                tok = AutoTokenizer.from_pretrained(model_id)
+                model = AutoModelForSeq2SeqLM.from_pretrained(model_id)
+                pipe = pipeline(
+                    "text2text-generation",
+                    model=model,
+                    tokenizer=tok,
+                    max_new_tokens=256,
+                    temperature=0.1,
+                    repetition_penalty=1.1,
+                )
+                return HuggingFacePipeline(pipeline=pipe)
+            except Exception:
+                # Fallback gracefully to smart deterministic extractor if heavy weights not loaded
+                return None
+
+        elif self.llm_provider in ("huggingface_endpoint", "hf_endpoint"):
+            try:
+                from langchain_huggingface import HuggingFaceEndpoint
+                hf_token = (
+                    settings.HUGGINGFACE_API_KEY
+                    or settings.HF_TOKEN
+                    or os.getenv("HUGGINGFACEHUB_API_TOKEN")
+                    or os.getenv("HF_TOKEN")
+                )
+                return HuggingFaceEndpoint(
+                    repo_id=settings.HUGGINGFACE_LLM_MODEL or "HuggingFaceH4/zephyr-7b-beta",
+                    huggingfacehub_api_token=hf_token,
+                    temperature=0.1,
+                    max_new_tokens=256,
+                )
+            except Exception:
+                return None
+
+        elif self.llm_provider == "gemini":
             try:
                 from langchain_google_genai import ChatGoogleGenerativeAI
                 api_key = settings.GOOGLE_API_KEY or os.getenv("GOOGLE_API_KEY")
@@ -151,8 +190,10 @@ class RAGChainManager:
                 context=context_str,
                 question=question,
             )
-            response = self._llm.invoke(prompt)
-            answer_text = response.content.strip()
+            if hasattr(response, "content"):
+                answer_text = response.content.strip()
+            else:
+                answer_text = str(response).strip()
         else:
             answer_text = self._mock_grounded_generator(question, retrieved_docs)
 

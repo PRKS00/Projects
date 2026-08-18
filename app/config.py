@@ -10,12 +10,18 @@ class Settings(BaseSettings):
     DATA_PROCESSED_DIR: Path = BASE_DIR / "data" / "processed"
     CHROMA_PERSIST_DIR: str = str(BASE_DIR / "chroma_db")
 
-    # Embeddings
-    EMBEDDING_PROVIDER: str = "huggingface"  # "huggingface", "gemini", "openai"
+    # Embeddings (Hugging Face Free Local Model)
+    EMBEDDING_PROVIDER: str = "huggingface"  # "huggingface", "mock", "gemini", "openai"
     HUGGINGFACE_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
+    HUGGINGFACE_EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     
-    # LLM
-    LLM_PROVIDER: str = "mock"  # "mock", "gemini", "openai"
+    # LLM (Hugging Face Free Model / Local Pipeline / Endpoint)
+    LLM_PROVIDER: str = "huggingface"  # "huggingface", "huggingface_endpoint", "mock", "gemini", "openai"
+    HUGGINGFACE_LLM_MODEL: str = "google/flan-t5-base"  # Fast, free CPU-friendly instruction model
+    HUGGINGFACE_API_KEY: str = ""
+    HF_TOKEN: str = ""
+    
+    # Optional Cloud API keys
     GOOGLE_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
     
@@ -31,7 +37,7 @@ class Settings(BaseSettings):
     RERANKER_TOP_N: int = 3
     SIMILARITY_THRESHOLD: float = 0.25
 
-    # Server
+    # Server & Dashboard
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
@@ -41,3 +47,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+

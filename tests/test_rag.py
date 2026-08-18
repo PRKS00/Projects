@@ -85,6 +85,35 @@ def test_fastapi_health_endpoint():
     assert data["status"] == "healthy"
 
 
+def test_fastapi_dashboard_endpoints():
+    client = TestClient(app)
+    # Test dashboard HTML page
+    res_dash = client.get("/")
+    assert res_dash.status_code == 200
+    assert "DarwixAI" in res_dash.text
+
+    # Test stats
+    res_stats = client.get("/api/v1/stats")
+    assert res_stats.status_code == 200
+    data_stats = res_stats.json()
+    assert "embedding_provider" in data_stats
+
+    # Test documents list
+    res_docs = client.get("/api/v1/documents")
+    assert res_docs.status_code == 200
+    assert "documents" in res_docs.json()
+
+    # Test sanitize preview
+    res_sanitize = client.post(
+        "/api/v1/sanitize-preview",
+        json={"text": "Contact Bob at bob@test.com, SSN: 000-11-2222"}
+    )
+    assert res_sanitize.status_code == 200
+    data_san = res_sanitize.json()
+    assert "[SSN_REDACTED]" in data_san["sanitized"]
+    assert "[EMAIL_REDACTED]" in data_san["sanitized"]
+
+
 def test_fastapi_query_endpoint(setup_knowledge_base):
     client = TestClient(app)
     response = client.post(
@@ -96,3 +125,13 @@ def test_fastapi_query_endpoint(setup_knowledge_base):
     assert "$500" in data["answer"]
     assert "speech_response" in data
     assert len(data["citations"]) > 0
+
+
+def test_fastapi_benchmarks_endpoint(setup_knowledge_base):
+    client = TestClient(app)
+    response = client.get("/api/v1/benchmarks")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_tests"] > 0
+    assert data["accuracy_percent"] >= 80.0
+

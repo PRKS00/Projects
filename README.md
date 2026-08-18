@@ -1,6 +1,6 @@
-# Problem 2: Enterprise Knowledge Base (RAG) Pipeline
+# DarwixAI: Enterprise Knowledge Base (RAG) & Q1 Voice Agent Pipeline
 
-A production-grade Retrieval-Augmented Generation (RAG) knowledge base built with **LangChain**, **ChromaDB**, and **FastAPI**, featuring automated document cleaning, PII sanitization, chunking with rich metadata, two-stage retrieval with reranking, grounded answer generation with source citations, and direct integration with the **Q1 Voice Agent**.
+A production-grade, zero-cost Retrieval-Augmented Generation (RAG) knowledge base built with **LangChain**, **Hugging Face Free Models**, **ChromaDB**, and **FastAPI**, featuring automated document cleaning, PII sanitization, chunking with rich metadata, two-stage retrieval with reranking, grounded answer generation with source citations, a dark-mode interactive **Web Dashboard**, and direct integration with the **Q1 Voice Agent**.
 
 ---
 
@@ -24,7 +24,8 @@ A production-grade Retrieval-Augmented Generation (RAG) knowledge base built wit
                        Metadata Enrichment
                                   │
                                   ▼
-                     Dense Embeddings Model
+                Hugging Face Dense Embeddings
+               (sentence-transformers/all-MiniLM)
                                   │
                                   ▼
                      ChromaDB Vector Store
@@ -36,16 +37,38 @@ A production-grade Retrieval-Augmented Generation (RAG) knowledge base built wit
                      Lexical/Semantic Reranker
                                   │
                                   ▼
-                     Grounded LLM Prompting
+                   Hugging Face LLM Prompting
+                      (google/flan-t5-base)
                                   │
                                   ▼
                      Answer + Source Citations
                                   │
-                        ┌─────────┴─────────┐
-                        ▼                   ▼
-                  FastAPI Service     Q1 Voice Agent
-                 (JSON / Swagger)   (Speech Response)
+                 ┌────────────────┼────────────────┐
+                 ▼                ▼                ▼
+          FastAPI Backend   Interactive Web   Q1 Voice Agent
+         (JSON / Swagger)      Dashboard      (TTS Synthesis)
 ```
+
+---
+
+## 🌟 Key Features
+
+1. **🤗 Hugging Face Free Models (Zero API Cost)**:
+   - **Embeddings:** `sentence-transformers/all-MiniLM-L6-v2` (Fast, dense 384-dim semantic representations).
+   - **Generation:** `google/flan-t5-base` (Instruction-tuned, CPU-friendly) or free Hugging Face Inference endpoints.
+2. **🎙️ Q1 Voice Agent Studio**:
+   - Live speech synthesizer (Web Speech TTS) voicing formatted `speech_response` strings with animated audio equalizers.
+   - Microphone Speech-to-Text (STT) input to speak queries directly into the knowledge base.
+3. **📊 Cyber-Slate Interactive Web Dashboard**:
+   - Modern dark-mode UI served directly at `http://localhost:8000/`.
+   - Live RAG queries, prompt chips, citation cards, and retrieval context inspection.
+   - Document upload & ingestion center with drag-and-drop support (`.md`, `.pdf`, `.txt`, `.csv`, `.json`).
+   - Live interactive PII redaction sandbox and vector store chunk browser.
+   - Browser-based golden benchmark evaluation runner (`tests/retrieval_tests.json`).
+4. **🛡️ Automated Cleaning & PII Sanitization**:
+   - Redacts SSNs, phone numbers, emails, and credit cards before vector indexing.
+5. **🎯 Two-Stage Retrieval & Grounded Citations**:
+   - Top-K candidate extraction + score reranking + strict source citation chips and out-of-domain refusal.
 
 ---
 
@@ -59,7 +82,7 @@ A production-grade Retrieval-Augmented Generation (RAG) knowledge base built wit
 │   └── processed/                # Preprocessed and sanitized cache
 ├── app/
 │   ├── __init__.py
-│   ├── config.py                 # Pydantic environment configuration
+│   ├── config.py                 # Pydantic environment configuration (Hugging Face defaults)
 │   ├── loaders/
 │   │   ├── __init__.py
 │   │   └── document_loader.py    # Universal multi-format document loader
@@ -69,7 +92,7 @@ A production-grade Retrieval-Augmented Generation (RAG) knowledge base built wit
 │   │   └── pii_masker.py         # Regex & pattern PII sanitization
 │   ├── embeddings/
 │   │   ├── __init__.py
-│   │   └── embeddings.py         # HuggingFace / Gemini / OpenAI embeddings factory
+│   │   └── embeddings.py         # Hugging Face embeddings factory
 │   ├── vectorstore/
 │   │   ├── __init__.py
 │   │   └── chroma.py             # ChromaDB indexer, chunker, & vector manager
@@ -78,15 +101,20 @@ A production-grade Retrieval-Augmented Generation (RAG) knowledge base built wit
 │   │   └── retriever.py          # 2-stage retriever with candidate reranking
 │   ├── generation/
 │   │   ├── __init__.py
-│   │   └── rag_chain.py          # Grounded generator, citation extractor & voice summarizer
+│   │   └── rag_chain.py          # Hugging Face grounded generator & Q1 voice formatter
+│   ├── static/
+│   │   ├── index.html            # Cyber-slate interactive web dashboard
+│   │   ├── style.css             # Glassmorphic dark styling & audio wave animations
+│   │   └── app.js                # Frontend controller & Web Speech TTS/STT orchestrator
 │   └── api/
 │       ├── __init__.py
 │       ├── schemas.py            # Pydantic request/response models
-│       └── main.py               # FastAPI application & ingestion CLI
+│       └── main.py               # FastAPI application, static mounting & ingestion CLI
 ├── tests/
 │   ├── __init__.py
 │   ├── retrieval_tests.json      # Golden retrieval test cases (positive + out-of-domain negative)
 │   └── test_rag.py               # Automated pytest suite
+├── dashboard.py                  # Optional standalone Streamlit dashboard
 ├── .env.example
 ├── .gitignore
 ├── requirements.txt
@@ -113,23 +141,22 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Configure Environment Variables
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-*(Optional: set `GOOGLE_API_KEY` or `OPENAI_API_KEY` and set `LLM_PROVIDER=gemini` or `LLM_PROVIDER=openai`)*
-
-### 4. Ingest Sample Knowledge Base
+### 3. Ingest Sample Knowledge Base
 ```bash
 python -m app.api.main --ingest
 ```
 
-### 5. Run the FastAPI Server
+### 4. Launch the Interactive Dashboard & API Server
 ```bash
 uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-Interactive API documentation will be available at: **[http://localhost:8000/docs](http://localhost:8000/docs)**
+- 🌐 **Interactive Dashboard:** **[http://localhost:8000/](http://localhost:8000/)**
+- 📖 **Swagger API Docs:** **[http://localhost:8000/docs](http://localhost:8000/docs)**
+
+*(Optional) If you prefer Streamlit, you can also run:*
+```bash
+streamlit run dashboard.py
+```
 
 ---
 
@@ -162,4 +189,4 @@ The `/api/v1/query` endpoint returns a specialized `speech_response` field:
   ]
 }
 ```
-The Q1 voice bot simply streams the `speech_response` string directly to the text-to-speech (TTS) engine.
+The Q1 voice bot streams the `speech_response` string directly to the text-to-speech engine or uses the built-in browser synthesizer in the Dashboard.
