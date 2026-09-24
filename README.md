@@ -1,4 +1,4 @@
-# DarwixAI: Enterprise Knowledge Base (RAG) & Q1 Voice Agent Pipeline
+Enterprise Knowledge Base (RAG) & Q1 Voice Agent Pipeline
 
 A production-grade, zero-cost Retrieval-Augmented Generation (RAG) knowledge base built with **LangChain**, **Hugging Face Free Models**, **ChromaDB**, and **FastAPI**, featuring automated document cleaning, PII sanitization, chunking with rich metadata, two-stage retrieval with reranking, grounded answer generation with source citations, a dark-mode interactive **Web Dashboard**, and direct integration with the **Q1 Voice Agent**.
 
